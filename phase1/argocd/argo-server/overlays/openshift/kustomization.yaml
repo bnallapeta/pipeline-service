@@ -3,3 +3,13 @@ kind: Kustomization
 resources:
   - ../../base
   - openshift-argocd-svc.yaml
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/securityContext
+        value: {}
+    target:
+      kind: Deployment
+      name: argocd-redis
+      namespace: argocd

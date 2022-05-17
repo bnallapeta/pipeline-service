@@ -97,9 +97,9 @@ main() {
 #2. Install pipelines and triggers on the physical cluster
 #3. Register this cluster onto argocd using gitops/argocd/image/register.sh
 
-#  install_argocd
+  install_argocd
   install_argo_apps
-#  register_pcluster_to_argocd
+  register_pcluster_to_argocd
 
 }
 
