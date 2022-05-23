@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: triggers
+  name: pipelines
   namespace: argocd
 
 spec:
@@ -9,13 +9,13 @@ spec:
     namespace: tekton-pipelines
     server: https://kubernetes.default.svc
   source:
-    path: phase1/triggers/base
+    path: phase1/openshift/pipelines
     repoURL: https://github.com/bnallapeta/pipelines-service.git
     targetRevision: phase1
   project: default
   syncPolicy:
 
-    # Comment this out if you want to manually trigger deployments (using the
+    # Comment this out if you want to manually trigger deployments (using the 
     # Argo CD Web UI or Argo CD CLI), rather than automatically deploying on
     # every new Git commit to your directory.
     automated:
@@ -23,7 +23,7 @@ spec:
       selfHeal: true
 
     syncOptions:
-      - CreateNamespace=true
+    - CreateNamespace=true
 
     retry:
       limit: -1 # number of failed sync attempt retries; unlimited number of attempts if less than 0

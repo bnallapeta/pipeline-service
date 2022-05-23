@@ -37,24 +37,36 @@ Setup the pipeline service on a cluster running on KCP." >&2
 install_argocd() {
   if [ "$(tr '[:upper:]' '[:lower:]' <<< "$CLUSTER_ENV")" == "kubernetes" ]; then
     echo "CLUSTER_ENV is set to kubernetes. Proceeding with installing ArgoCD on the kubernetes cluster."
-    KUBECONFIG=$KUBECONFIG_PCLUSTER kubectl apply -k ../argocd/argo-server/overlays/kubernetes/
-  elif [ "$(tr '[:upper:]' '[:lower:]' <<< "$CLUSTER_ENV")" == "openshift" ]; then
-    echo "CLUSTER_ENV is set to openshift. Proceeding with installing ArgoCD on the openshift cluster."
-    KUBECONFIG=$KUBECONFIG_PCLUSTER kubectl apply -k ../argocd/argo-server/overlays/openshift/
-  fi
 
-  #Prints the ArgoCD details once it's installed successfully
-  #Print ARGO_URL, ARGO_USER and ARGO_PWD
-  if [ "$(tr '[:upper:]' '[:lower:]' <<< "$CLUSTER_ENV")" == "kubernetes" ]; then
+    KUBECONFIG=$KUBECONFIG_PCLUSTER kubectl apply -k ../kubernetes/argocd/argo-server
+
+    #Prints the ArgoCD details once it's installed successfully
+    #Print ARGO_URL, ARGO_USER and ARGO_PWD
     ARGO_URL=$(KUBECONFIG=$KUBECONFIG_PCLUSTER kubectl -n argocd get svc argocd-server -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
     ARGO_USER="admin"
     ARGO_PWD="$(KUBECONFIG=$KUBECONFIG_PCLUSTER kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo)"
+
   elif [ "$(tr '[:upper:]' '[:lower:]' <<< "$CLUSTER_ENV")" == "openshift" ]; then
-    ARGO_URL="$(KUBECONFIG=$KUBECONFIG_PCLUSTER oc -n argocd get route argocd-server -o jsonpath='{.spec.host}')"
+    echo "CLUSTER_ENV is set to openshift. Proceeding with installing ArgoCD on the openshift cluster."
+
+    KUBECONFIG=$KUBECONFIG_PCLUSTER oc apply -k ../openshift/argocd/argo-server
+
+    #Prints the ArgoCD details once it's installed successfully
+    #Print ARGO_URL, ARGO_USER and ARGO_PWD
+
+    declare podname=""
+    until [[ ! -z $podname ]] ; do
+      podname=$(oc get pods --ignore-not-found -n openshift-gitops -l=app.kubernetes.io/name=openshift-gitops-repo-server -o jsonpath='{.items[0].metadata.name}')
+    done
+
+    oc wait --for=condition=Ready "pod/$podname" -n openshift-gitops --timeout=100s
+    ARGO_URL="$(KUBECONFIG=$KUBECONFIG_PCLUSTER oc -n openshift-gitops get route openshift-gitops-server -o jsonpath='{.spec.host}')"
     ARGO_USER="admin"
     #TODO: Add a loop to check if ARGO_PWD is indeed fetched
-    ARGO_PWD="$(KUBECONFIG=$KUBECONFIG_PCLUSTER oc -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo)"
+    ARGO_PWD="$(KUBECONFIG=$KUBECONFIG_PCLUSTER oc -n openshift-gitops get secret openshift-gitops-cluster -o jsonpath="{.data.admin\.password}" | base64 -d; echo)"
+
   fi
+
 
   printf '\nARGO_URL: %s\n' "$ARGO_URL"
   printf 'ARGO_USER: %s\n' "admin"
@@ -68,12 +80,18 @@ install_argo_apps() {
   if [ "$(tr '[:upper:]' '[:lower:]' <<< "$CLUSTER_ENV")" == "kubernetes" ]; then
     echo "CLUSTER_ENV is set to kubernetes. Proceeding with installing pipelines and triggers on the kubernetes cluster."
 
-    KUBECONFIG=$KUBECONFIG_PCLUSTER kubectl apply -f ../argocd/argocd.yaml
+    KUBECONFIG=$KUBECONFIG_PCLUSTER kubectl apply -f ../kubernetes/argocd/argocd.yaml
+    echo "Print the status of the ArgoCD applications."
+
+    KUBECONFIG=$KUBECONFIG_PCLUSTER kubectl -n argocd get apps
 
   elif [ "$(tr '[:upper:]' '[:lower:]' <<< "$CLUSTER_ENV")" == "openshift" ]; then
     echo "CLUSTER_ENV is set to openshift. Proceeding with installing pipelines and triggers on the openshift cluster."
 
-    KUBECONFIG=$KUBECONFIG_PCLUSTER oc apply -f ../argocd/argocd.yaml
+    KUBECONFIG=$KUBECONFIG_PCLUSTER oc apply -f ../openshift/argocd/argocd.yaml
+    echo "Print the status of the ArgoCD applications."
+
+    KUBECONFIG=$KUBECONFIG_PCLUSTER oc -n openshift-gitops get apps
   fi
 }
 
@@ -84,13 +102,8 @@ register_pcluster_to_argocd() {
 main() {
   parse_init "$@"
 
-  #TODO: What is the default env we want to maintain - kubernetes or openshift
   CLUSTER_ENV=${CLUSTER_ENV:-kubernetes}
   KUBECONFIG_PCLUSTER="/home/bnr/workspace/pipelines-service/gitops/credentials/kubeconfig/plnsvc/pcluster.kubeconfig"
-#  CLUSTER_NAME="plnsvc"
-#  KCP_ENV="kcp-unstable"
-#  KUBECONFIG_KCP_ARGOCD="$KUBECONFIG_DIR/kcp.argocd-manager.yaml"
-#  KUBECONFIG_KCP_PLNSVC="$KUBECONFIG_DIR/kcp.plnsvc-manager.yaml"
 
 #Steps
 #1. Install ArgoCD on kubernetes or openshift based on flag
@@ -99,7 +112,7 @@ main() {
 
   install_argocd
   install_argo_apps
-  register_pcluster_to_argocd
+#  register_pcluster_to_argocd #Not required to call this function explicitly as PAC based (PR push) registration is setup.
 
 }
 

@@ -9,7 +9,7 @@ spec:
     namespace: argocd
     server: https://kubernetes.default.svc
   source:
-    path: phase1/argocd/argo-apps
+    path: phase1/kubernetes/argocd/argo-apps
     repoURL: https://github.com/bnallapeta/pipelines-service.git
     targetRevision: phase1
   project: default
