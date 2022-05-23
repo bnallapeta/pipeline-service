@@ -57,6 +57,7 @@ install_argocd() {
     declare podname=""
     until [[ ! -z $podname ]] ; do
       podname=$(oc get pods --ignore-not-found -n openshift-gitops -l=app.kubernetes.io/name=openshift-gitops-repo-server -o jsonpath='{.items[0].metadata.name}')
+      sleep 3
     done
 
     oc wait --for=condition=Ready "pod/$podname" -n openshift-gitops --timeout=100s

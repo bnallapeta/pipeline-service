@@ -19,10 +19,6 @@ set -o pipefail
 usage_args() {
   echo "
 Optional arguments:
-    -k, --kubeconfig_dir KUBECONFIG_DIR
-        Path to the directory holding the kubeconfigs. The directory must contain the
-        files ['argocd.yaml', 'kcp.yaml', 'plnsvc.yaml'] and the user must be logged in.
-        Default value: ${KUBECONFIG:-$HOME/.kube}
     -c, --cluster_env
         Provide the environment of your physical cluster.
         Possible values: kubernetes or openshift
@@ -39,14 +35,10 @@ Example:
 
 _parse_args() {
   local args
-  args="$(getopt -o dhe:c:k:w: -l "debug,help,environment,cluster_env,kcp,workspace" -n "$0" -- "$@")"
+  args="$(getopt -o dh:c: -l "debug,help,cluster_env" -n "$0" -- "$@")"
   eval set -- "$args"
   while true; do
     case "$1" in
-    -k | --kubeconfig_dir)
-      shift
-      KUBECONFIG_DIR=$1
-      ;;
     -c | --cluster_env)
       shift
       CLUSTER_ENV=$1

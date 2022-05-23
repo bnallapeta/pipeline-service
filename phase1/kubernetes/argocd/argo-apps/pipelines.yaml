@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: pipelines
+  name: pipelines-triggers
   namespace: argocd
 
 spec:
@@ -9,7 +9,7 @@ spec:
     namespace: tekton-pipelines
     server: https://kubernetes.default.svc
   source:
-    path: phase1/kubernetes/pipelines
+    path: phase1/kubernetes/pipelines-triggers
     repoURL: https://github.com/bnallapeta/pipelines-service.git
     targetRevision: phase1
   project: default
