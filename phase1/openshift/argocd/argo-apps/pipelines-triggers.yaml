@@ -6,7 +6,7 @@ metadata:
 
 spec:
   destination:
-    namespace: tekton-pipelines
+    namespace: openshift-pipelines
     server: https://kubernetes.default.svc
   source:
     path: phase1/openshift/pipelines-triggers
