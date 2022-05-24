@@ -26,12 +26,34 @@ SCRIPT_DIR="$(
 source "$SCRIPT_DIR/common.sh"
 
 usage() {
-  echo "
-Usage:
-    ${0##*/} [options]
 
-Setup the pipeline service on a cluster running on KCP." >&2
-  usage_args
+    printf "Usage: CLUSTER_ENV="kubernetes" DATA_DIR="/workspace" ./deploy.sh\n\n"
+
+    # Parameters
+    printf "The following parameters need to be passed to the script:\n"
+    printf "DATA_DIR: the location of this repository\n"
+    printf "CLUSTER_ENV: the cluster you are running this script on. Takes either kubernetes or openshift as accepted values.\n"
+}
+
+prechecks () {
+    if ! command -v argocd &> /dev/null; then
+        printf "Argocd CLI could not be found\n"
+    	exit 1
+    fi
+
+    DATA_DIR=${DATA_DIR:-}
+    if [[ -z "${DATA_DIR}" ]]; then
+        printf "DATA_DIR not set\n\n"
+        usage
+	exit 1
+    fi
+    INSECURE=${INSECURE:-}
+    if [[ $(tr '[:upper:]' '[:lower:]' <<< "$INSECURE") == "true" ]]; then
+	printf "insecured connection to Argo CD allowed!\n"
+        insecure="--insecure"
+    else
+        insecure=""
+    fi
 }
 
 install_argocd() {
@@ -55,7 +77,8 @@ install_argocd() {
     #Print ARGO_URL, ARGO_USER and ARGO_PWD
 
     declare podname=""
-    until [[ ! -z $podname ]] ; do
+    until [[ -n $podname ]] ; do
+      echo "Checking if the Argo pod is ready..."
       podname=$(oc get pods --ignore-not-found -n openshift-gitops -l=app.kubernetes.io/name=openshift-gitops-repo-server -o jsonpath='{.items[0].metadata.name}')
       sleep 3
     done
@@ -104,7 +127,7 @@ main() {
   parse_init "$@"
 
   CLUSTER_ENV=${CLUSTER_ENV:-kubernetes}
-  KUBECONFIG_PCLUSTER="/home/bnr/workspace/pipelines-service/gitops/credentials/kubeconfig/plnsvc/pcluster.kubeconfig"
+  KUBECONFIG_PCLUSTER="$DATA_DIR/gitops/credentials/kubeconfig/plnsvc/pcluster.kubeconfig"
 
 #Steps
 #1. Install ArgoCD on kubernetes or openshift based on flag
