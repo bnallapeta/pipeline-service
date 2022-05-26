@@ -23,6 +23,12 @@ rules:
       - "resourcequotas"
       - "secrets"
       - "serviceaccounts"
+      - "persistentvolumes"
+      - "persistentvolumeclaims"
+      - "endpoints"
+      - "replicationcontrollers"
+      - "podtemplates"
+      - "nodes"
     verbs:
       - "get"
       - "list"
@@ -46,6 +52,9 @@ rules:
       - "apps"
     resources:
       - "deployments"
+      - "replicasets"
+      - "daemonsets"
+      - "statefulsets"
     verbs:
       - "get"
       - "list"
@@ -151,6 +160,152 @@ rules:
       - "workload.kcp.dev"
     resources:
       - "workloadclusters"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "admissionregistration.k8s.io"
+    resources:
+      - "mutatingwebhookconfigurations"
+      - "validatingwebhookconfigurations"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "machine.openshift.io"
+    resources:
+      - "machinehealthchecks"
+      - "machinesets"
+      - "machines"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "apiregistration.k8s.io"
+    resources:
+      - "apiservices"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "networking.k8s.io"
+    resources:
+      - "networkpolicies"
+      - "ingresses"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "apps"
+    resources:
+      - "controllerrevisions"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "operator.openshift.io"
+    resources:
+      - "etcds"
+      - "networks"
+      - "kubecontrollermanagers"
+      - "openshiftapiservers"
+      - "consoles"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "storage.k8s.io"
+    resources:
+      - "volumeattachments"
+      - "csistoragecapacities"
+      - "csinodes"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "user.openshift.io"
+    resources:
+      - "users"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "build.openshift.io"
+    resources:
+      - "builds"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "oauth.openshift.io"
+    resources:
+      - "oauthauthorizetokens"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "template.openshift.io"
+    resources:
+      - "templates"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "node.k8s.io"
+    resources:
+      - "runtimeclasses"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "apiserver.openshift.io"
+    resources:
+      - "apirequestcounts"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "scheduling.k8s.io"
+    resources:
+      - "priorityclasses"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "batch"
+    resources:
+      - "cronjobs"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "apps.openshift.io"
+    resources:
+      - "deploymentconfigs"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "autoscaling"
+    resources:
+      - "horizontalpodautoscalers"
     verbs:
       - "get"
       - "list"

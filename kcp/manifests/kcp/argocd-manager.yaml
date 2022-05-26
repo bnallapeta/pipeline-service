@@ -23,6 +23,10 @@ rules:
       - "resourcequotas"
       - "secrets"
       - "serviceaccounts"
+      - "persistentvolumeclaims"
+      - "endpoints"
+      - "replicationcontrollers"
+      - "podtemplates"
     verbs:
       - "get"
       - "list"
@@ -160,6 +164,63 @@ rules:
       - "workload.kcp.dev"
     resources:
       - "workloadclusters"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "machine.openshift.io/v1beta1"
+    resources:
+      - "machinehealthchecks"
+      - "machinesets"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "apiregistration.k8s.io/v1"
+    resources:
+      - "apiservices"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "networking.k8s.io"
+    resources:
+      - "networkpolicies"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "apps"
+    resources:
+      - "controllerrevisions"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "operator.openshift.io"
+    resources:
+      - "etcds"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "storage.k8s.io"
+    resources:
+      - "volumeattachments"
+    verbs:
+      - "get"
+      - "list"
+      - "watch"
+  - apiGroups:
+      - "user.openshift.io"
+    resources:
+      - "users"
     verbs:
       - "get"
       - "list"

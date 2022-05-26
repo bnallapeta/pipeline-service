@@ -20,15 +20,11 @@ set -o pipefail
 
 usage() {
 
-    printf "Usage: ARGO_URL="https://argoserver.com" ARGO_USER="user" ARGO_PWD="xxxxxxxxx" DATA_DIR="/workspace" ./register.sh\n\n"
+    printf "Usage: DATA_DIR="/workspace" ./register.sh\n\n"
 
     # Parameters
     printf "The following parameters need to be passed to the script:\n"
-    printf "ARGO_URL: the address of the Argo CD server the clusters need to be registered to\n"
-    printf "ARGO_USER: the user for the authentication\n"
-    printf "ARGO_PWD: the password for the authentication\n"
     printf "DATA_DIR: the location of the cluster files\n"
-    printf "INSECURE (optional): whether insecured connection to Argo CD should be allowed. Default value: false\n\n"
 }
 
 prechecks () {
@@ -36,41 +32,54 @@ prechecks () {
         printf "Argocd CLI could not be found\n"
     	exit 1
     fi
-    ARGO_URL=${ARGO_URL:-}
-    if [[ -z "${ARGO_URL}" ]]; then
-        printf "ARGO_URL not set\n\n"
-        usage
-        exit 1
-    fi
-    ARGO_USER=${ARGO_USER:-}
-    if [[ -z "${ARGO_USER}" ]]; then
-        printf "ARGO_USER not set\n\n"
-        usage
-	exit 1
-    fi
-    ARGO_PWD=${ARGO_PWD:-}
-    if [[ -z "${ARGO_PWD}" ]]; then
-	printf "ARGO_PWD not set\n\n"
-        usage
-	exit 1
-    fi
+
     DATA_DIR=${DATA_DIR:-}
     if [[ -z "${DATA_DIR}" ]]; then
         printf "DATA_DIR not set\n\n"
         usage
-	exit 1
+	      exit 1
     fi
-    INSECURE=${INSECURE:-}
-    if [[ $(tr '[:upper:]' '[:lower:]' <<< "$INSECURE") == "true" ]]; then
-	printf "insecured connection to Argo CD allowed!\n"
-        insecure="--insecure"
-    else
-        insecure=""
-    fi
+
+    #TODO: Add a precheck to see if openshift-gitops operator is installed
+}
+
+# populate clusters with the cluster names taken from the kubeconfig
+# populate contexts with the context name taken from the kubeconfig
+# populate kubeconfigs with the associated kubeconfig for each cluster name
+# only consider the first context for a specific cluster
+get_clusters() {
+    clusters=()
+    contexts=()
+    kubeconfigs=()
+    files=("$(ls "$DATA_DIR/gitops/credentials/kubeconfig/compute")")
+    for kubeconfig in "${files[@]}"; do
+        subs=("$(KUBECONFIG=${DATA_DIR}/gitops/credentials/kubeconfig/compute/${kubeconfig} kubectl config view -o jsonpath='{range .contexts[*]}{.name}{","}{.context.cluster}{"\n"}{end}')")
+        for sub in "${subs[@]}"; do
+            context=$(echo -n "${sub}" | cut -d ',' -f 1)
+            cluster=$(echo -n "${sub}" | cut -d ',' -f 2 | cut -d ':' -f 1)
+	    if ! (echo "${clusters[@]}" | grep "${cluster}"); then
+                clusters+=( "${cluster}" )
+                contexts+=( "${context}" )
+                kubeconfigs+=( "${kubeconfig}" )
+            fi
+        done
+    done
+
+#    printf '%s -- %s -- %s\n' "${kubeconfigs[@]}" "${clusters[@]}" "${contexts[@]}"
+}
+
+install_pipelines_triggers() {
+  #TODO: Add a loading bar until components are created
+  echo "Installing pipelines and triggers components on the cluster via Openshift GitOps..."
+  for i in "${!clusters[@]}"; do
+    KUBECONFIG="${DATA_DIR}/gitops/credentials/kubeconfig/compute/${kubeconfigs[$i]}" oc --context "${contexts[$i]}" apply -f "${DATA_DIR}/phase1/argocd/argocd.yaml"
+  done
 }
 
 main() {
   prechecks
+  get_clusters
+  install_pipelines_triggers
 }
 
 if [ "${BASH_SOURCE[0]}" == "$0" ]; then
