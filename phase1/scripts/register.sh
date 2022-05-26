@@ -28,19 +28,12 @@ usage() {
 }
 
 prechecks () {
-    if ! command -v argocd &> /dev/null; then
-        printf "Argocd CLI could not be found\n"
-    	exit 1
-    fi
-
     DATA_DIR=${DATA_DIR:-}
     if [[ -z "${DATA_DIR}" ]]; then
         printf "DATA_DIR not set\n\n"
         usage
 	      exit 1
     fi
-
-    #TODO: Add a precheck to see if openshift-gitops operator is installed
 }
 
 # populate clusters with the cluster names taken from the kubeconfig
@@ -65,21 +58,84 @@ get_clusters() {
         done
     done
 
-#    printf '%s -- %s -- %s\n' "${kubeconfigs[@]}" "${clusters[@]}" "${contexts[@]}"
+}
+
+gitops_installed_check() {
+    for i in "${!clusters[@]}"; do
+
+      #check if openshift-gitops subscription is installed in openshift-operators namespace
+      gitops_subscription=$( KUBECONFIG="${DATA_DIR}/gitops/credentials/kubeconfig/compute/${kubeconfigs[$i]}" kubectl --context "${contexts[$i]}" -n openshift-operators get subs/openshift-gitops-operator -o jsonpath='{.metadata.name}' 2>&1 )
+
+      if echo "${gitops_subscription}" | grep 'Error from server'; then
+          printf "Openshift GitOps is not installed in %s\n" "${clusters[@]}"
+          exit 1
+      elif echo "${gitops_subscription}" | grep 'openshift-gitops-operator'; then
+        printf "Openshift GitOps is installed in %s\n" "${clusters[@]}"
+
+        #checking if the gitops server pod is up and running
+        declare podname=""
+        until [[ -n $podname ]] ; do
+          echo "Checking if the GitOps server pod is available and Ready..."
+          podname=$(KUBECONFIG="${DATA_DIR}/gitops/credentials/kubeconfig/compute/${kubeconfigs[$i]}" kubectl --context "${contexts[$i]}" get pods --ignore-not-found -n openshift-gitops -l=app.kubernetes.io/name=openshift-gitops-server -o jsonpath='{.items[0].metadata.name}')
+          sleep 3
+        done
+
+        KUBECONFIG="${DATA_DIR}/gitops/credentials/kubeconfig/compute/${kubeconfigs[$i]}" kubectl --context "${contexts[$i]}" wait --for=condition=Ready "pod/$podname" -n openshift-gitops --timeout=100s
+
+      else
+        printf "Some unknown error\n"
+      fi
+    done
 }
 
 install_pipelines_triggers() {
   #TODO: Add a loading bar until components are created
   echo "Installing pipelines and triggers components on the cluster via Openshift GitOps..."
   for i in "${!clusters[@]}"; do
-    KUBECONFIG="${DATA_DIR}/gitops/credentials/kubeconfig/compute/${kubeconfigs[$i]}" oc --context "${contexts[$i]}" apply -f "${DATA_DIR}/phase1/argocd/argocd.yaml"
+    KUBECONFIG="${DATA_DIR}/gitops/credentials/kubeconfig/compute/${kubeconfigs[$i]}" kubectl --context "${contexts[$i]}" apply -f "${DATA_DIR}/phase1/argocd/argocd.yaml"
   done
+}
+
+postchecks() {
+  #checking if the pipelines and triggers pods are up and running
+  #pipelines controller
+  declare pipelines_podname=""
+  until [[ -n $pipelines_podname ]] ; do
+    echo "Checking if the pipelines pod is available and Ready..."
+    pipelines_podname=$(KUBECONFIG="${DATA_DIR}/gitops/credentials/kubeconfig/compute/${kubeconfigs[$i]}" kubectl --context "${contexts[$i]}" get pods --ignore-not-found -n openshift-pipelines -l=app=tekton-pipelines-controller -o jsonpath='{.items[0].metadata.name}')
+    sleep 10
+  done
+
+  KUBECONFIG="${DATA_DIR}/gitops/credentials/kubeconfig/compute/${kubeconfigs[$i]}" kubectl --context "${contexts[$i]}" wait --for=condition=Ready "pod/$pipelines_podname" -n openshift-pipelines --timeout=60s
+
+  #triggers controller
+  declare triggers_podname=""
+  until [[ -n $triggers_podname ]] ; do
+    echo "Checking if the triggers pod is available and Ready..."
+    triggers_podname=$(KUBECONFIG="${DATA_DIR}/gitops/credentials/kubeconfig/compute/${kubeconfigs[$i]}" kubectl --context "${contexts[$i]}" get pods --ignore-not-found -n openshift-pipelines -l=app=tekton-triggers-controller -o jsonpath='{.items[0].metadata.name}')
+    sleep 10
+  done
+
+  KUBECONFIG="${DATA_DIR}/gitops/credentials/kubeconfig/compute/${kubeconfigs[$i]}" kubectl --context "${contexts[$i]}" wait --for=condition=Ready "pod/$triggers_podname" -n openshift-pipelines --timeout=60s
+
+  #triggers interceptor
+  declare triggers_interceptor_podname=""
+  until [[ -n $triggers_interceptor_podname ]] ; do
+    echo "Checking if the pipelines pod is available and Ready..."
+    triggers_interceptor_podname=$(KUBECONFIG="${DATA_DIR}/gitops/credentials/kubeconfig/compute/${kubeconfigs[$i]}" kubectl --context "${contexts[$i]}" get pods --ignore-not-found -n openshift-pipelines -l=app=tekton-triggers-core-interceptors -o jsonpath='{.items[0].metadata.name}')
+    sleep 10
+  done
+
+  KUBECONFIG="${DATA_DIR}/gitops/credentials/kubeconfig/compute/${kubeconfigs[$i]}" kubectl --context "${contexts[$i]}" wait --for=condition=Ready "pod/$triggers_interceptor_podname" -n openshift-pipelines --timeout=60s
+
 }
 
 main() {
   prechecks
   get_clusters
+  gitops_installed_check
   install_pipelines_triggers
+  postchecks
 }
 
 if [ "${BASH_SOURCE[0]}" == "$0" ]; then
