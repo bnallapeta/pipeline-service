@@ -3,6 +3,7 @@ kind: PipelineRun
 metadata:
   name: setup-cluster-pipeline
   annotations:
+    pipelinesascode.tekton.dev/task: "[git-clone]"
     pipelinesascode.tekton.dev/on-target-branch: "[phase1]"
     pipelinesascode.tekton.dev/on-event: "[pull_request]"
 spec:
