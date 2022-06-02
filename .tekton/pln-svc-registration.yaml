@@ -41,6 +41,10 @@ spec:
         taskSpec:
           workspaces:
             - name: source
+          stepTemplate:
+            env:
+              - name: "HOME"
+                value: "/tekton/home"
           steps:
             - name: cluster-setup
               image: quay.io/bnr/pipelines-setup:latest
