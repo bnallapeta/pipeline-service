@@ -1,0 +1,35 @@
+FROM registry.access.redhat.com/ubi8/ubi-minimal:8.6
+LABEL build-date= \
+      com.redhat.build-host= \
+      description="This image provides a script to scan Clair for security vulnerabilities on container images via Quay." \
+      distribution-scope="public" \
+      io.k8s.description="This image provides a script to scan Clair for security vulnerabilities on container images via Quay." \
+      io.k8s.display-name="clair scan" \
+      maintainer="Pipeline Service" \
+      name="clair-scan" \
+      release="0.1" \
+      summary="Provides the latest results of clair security scan." \
+      url="https://github.com/openshift-pipelines/pipeline-service/tree/main/test/images/clair-scan" \
+      vcs-ref=  \
+      vcs-type="git" \
+      vendor="Pipeline Service" \
+      version="0.1"
+WORKDIR /
+RUN mkdir /workspace && chmod 777 /workspace && chown 65532:65532 /workspace
+ENV HOME /tmp/home
+RUN mkdir $HOME && chmod 777 $HOME && chown 65532:65532 $HOME
+RUN microdnf install curl
+RUN whoami
+RUN sleep 3600
+RUN ls
+RUN ls .
+RUN ls /workspace
+RUN ls /workspace/source
+COPY ./scan.sh /usr/local/bin/scan.sh
+COPY ./config.json /workspace/config.json
+RUN chmod 755 /usr/local/bin/scan.sh
+RUN chmod 755 /workspace/config.json
+USER 65532:65532
+VOLUME /workspace
+WORKDIR /workspace
+ENTRYPOINT ["/usr/local/bin/scan.sh"]

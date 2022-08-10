@@ -1,0 +1,33 @@
+name: Fetch security scan results from quay
+on:
+  push:
+    branches:
+      - clair
+    paths:
+      - "images/**"
+  workflow_dispatch:
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Fetch results
+        id: fetch-results
+        run: |
+          sh ./test/images/clair-scan/scan.sh
+          echo "::set-output name=VULNERABILITIES_EXIST::$VULNERABILITIES_EXIST"
+        env:
+          AUTH_BEARER_TOKEN: ${{ secrets.AUTH_BEARER_TOKEN }}
+
+      - name: Check results
+        id: check-results
+        if: ${{ steps.fetch-results.outputs.VULNERABILITIES_EXIST }} == "true"
+        run: |
+          echo "Vulnerabilities found"
+          exit 1
