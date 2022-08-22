@@ -62,7 +62,7 @@ get_vulnerabilities() {
       printf "\n Check the full report here: https://quay.io/repository/redhat-pipeline-service/%s/manifest/%s?tab=vulnerabilities \n" "$img" "$digest"
       export VULNERABILITIES_EXIST=true
     else
-      printf "No vulnerabilities found \n"
+      printf "No vulnerabilities found! \n"
     fi
 
     rm -f /tmp/vulnerability.json
