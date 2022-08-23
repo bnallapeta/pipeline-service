@@ -134,7 +134,7 @@ check_deployments() {
     if ! timeout 300s bash -c "while ! kubectl get deployment/$deploy -n $ns >/dev/null 2>/dev/null; do printf '.'; sleep 10; done"; then
       exit_error "$deploy not found (timeout)"
     else
-      printf "Exists"
+      printf "Exists!"
     fi
 
     #a loop to check if the deployment is Available and Ready
