@@ -1,0 +1,85 @@
+---
+name: Fetch security scan results from quay
+on:
+  push:
+    branches:
+      - actions
+  pull_request:
+    branches:
+      - actions
+  workflow_dispatch:
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    outputs:
+      sha_short: ${{ steps.vars.outputs.sha_short }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            access-setup:
+            - 'images/access-setup/**'
+            cluster-setup:
+              - 'images/cluster-setup/**'
+            gateway-deployment:
+              - 'images/gateway-deployment/**'
+            kcp-registrar:
+              - 'images/kcp-registrar/**'
+            shellcheck:
+              - 'test/images/shellcheck/**'
+            vulnerability:
+              - 'test/images/vulnerability-scan/**'
+
+      - name: Get the short sha
+        id: vars
+        run: echo "::set-output name=sha_short::$(echo ${{ github.sha }} | cut -b -7)"
+
+      # Build and push access-setup image, tagged with latest and the commit SHA.
+      - name: Build access-setup Image
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: access-setup
+          context: ./images/access-setup
+          tags: latest ${{ steps.vars.outputs.sha_short }} ${{ github.ref_name }}
+          containerfiles: |
+            ./images/access-setup/Dockerfile
+          build-args: |
+            KCP_BRANCH=release-0.7
+      - name: Push to quay.io
+        id: push-to-quay
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }} ${{ github.ref_name }}
+          registry: quay.io/bnr
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+      - name: Print image url
+        run: echo "Image pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
+
+      # Build and push cluster-setup image, tagged with latest and the commit SHA.
+      - name: Build cluster-setup Image
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: cluster-setup
+          context: ./images/cluster-setup
+          tags: latest ${{ steps.vars.outputs.sha_short }} ${{ github.ref_name }}
+          containerfiles: |
+            ./images/cluster-setup/Dockerfile
+      - name: Push to quay.io
+        id: push-to-quay
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build-image.outputs.image }}
+          tags: ${{ steps.build-image.outputs.tags }} ${{ github.ref_name }}
+          registry: quay.io/bnr
+          username: ${{ secrets.QUAY_USERNAME }}
+          password: ${{ secrets.QUAY_TOKEN }}
+      - name: Print image url
+        run: echo "Image pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
