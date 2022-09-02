@@ -1,7 +1,7 @@
 # Access Setup
 
 ## Goals
-Given a new KCP instance or compute cluster, deploy the minimum
+Given a new KCP instance or compute cluster (OpenShift), deploy the minimum
 amount of resources required to operate that cluster from a git repository
 implementing a CD process (c.f. gitops/sre). The CD process will then be
 responsible for installing/registering all the required resources.
