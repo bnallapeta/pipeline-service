@@ -25,3 +25,6 @@ CR_TO_SYNC:
 # Applications to be deployed on the cluster
 APPS:
   - pipeline_service # pipeline_service sets up Pipeline Service on the cluster.
+
+# kcp version
+KCP_VERSION: release-0.7

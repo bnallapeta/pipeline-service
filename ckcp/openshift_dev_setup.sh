@@ -16,7 +16,7 @@ source "$SCRIPT_DIR/../images/cluster-setup/bin/utils.sh"
 
 GITOPS_DIR="$(dirname "$SCRIPT_DIR")/gitops"
 CKCP_DIR="$(dirname "$SCRIPT_DIR")/ckcp"
-CONFIG="$CKCP_DIR/config.yaml"
+CONFIG="$(dirname "$SCRIPT_DIR")/config/config.yaml"
 
 KUBECONFIG=${KUBECONFIG:-$HOME/.kube/config}
 
@@ -140,7 +140,7 @@ init() {
   export KUBECONFIG
   kcp_org="root:default"
   kcp_workspace="pipeline-service-compute"
-  kcp_version="$(yq '.images[] | select(.name == "kcp") | .newTag' "$SCRIPT_DIR/openshift/overlays/dev/kustomization.yaml")"
+  kcp_version="$(yq '.KCP_VERSION' "$CONFIG")"
 }
 
 # To ensure that dependencies are satisfied

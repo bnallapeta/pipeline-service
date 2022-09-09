@@ -33,7 +33,14 @@ precheck() {
   fi
 }
 
+SCRIPT_DIR="$(
+  cd "$(dirname "$0")" >/dev/null
+  pwd
+)"
+CONFIG="$SCRIPT_DIR/config/config.yaml"
+KCP_VERSION=$(yq '.KCP_VERSION' "$CONFIG")
 KCP_DIR="${KCP_DIR:-}"
+
 kcp-binaries() {
   if [[ -z "${KCP_DIR}" ]]; then
     precheck git
@@ -42,8 +49,8 @@ kcp-binaries() {
     git clone https://github.com/kcp-dev/kcp.git
     KCP_DIR="${KCP_PARENT_DIR}/kcp"
     pushd kcp
-    KCP_BRANCH="${KCP_BRANCH:-release-0.7}"
-    git checkout "${KCP_BRANCH}"
+    KCP_TAG="${KCP_BRANCH:-$KCP_VERSION}"
+    git checkout tags/"${KCP_TAG}" -b "${KCP_TAG}"
     make build
     popd
     popd
