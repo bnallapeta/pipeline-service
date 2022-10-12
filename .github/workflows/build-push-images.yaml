@@ -69,7 +69,7 @@ jobs:
         with:
           image: ${{ steps.build-image-access-setup.outputs.image }}
           tags: ${{ steps.build-image-access-setup.outputs.tags }} ${{ github.ref_name }}
-          registry: quay.io/redhat-pipeline-service
+          registry: quay.io/bnr
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
       - name: Print image url
@@ -105,7 +105,7 @@ jobs:
         with:
           image: ${{ steps.build-image-cluster-image.outputs.image }}
           tags: ${{ steps.build-image-cluster-image.outputs.tags }} ${{ github.ref_name }}
-          registry: quay.io/redhat-pipeline-service
+          registry: quay.io/bnr
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
       - name: Print image url
@@ -141,7 +141,7 @@ jobs:
         with:
           image: ${{ steps.build-image-gateway-deployment.outputs.image }}
           tags: ${{ steps.build-image-gateway-deployment.outputs.tags }} ${{ github.ref_name }}
-          registry: quay.io/redhat-pipeline-service
+          registry: quay.io/bnr
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
       - name: Print image url
@@ -179,7 +179,7 @@ jobs:
         with:
           image: ${{ steps.build-image-kcp-registrar.outputs.image }}
           tags: ${{ steps.build-image-kcp-registrar.outputs.tags }} ${{ github.ref_name }}
-          registry: quay.io/redhat-pipeline-service
+          registry: quay.io/bnr
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
       - name: Print image url
@@ -215,7 +215,7 @@ jobs:
         with:
           image: ${{ steps.build-image-quay-upload.outputs.image }}
           tags: ${{ steps.build-image-quay-upload.outputs.tags }} ${{ github.ref_name }}
-          registry: quay.io/redhat-pipeline-service
+          registry: quay.io/bnr
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
       - name: Print image url
@@ -251,7 +251,7 @@ jobs:
         with:
           image: ${{ steps.build-image-update-pipeline-service.outputs.image }}
           tags: ${{ steps.build-image-update-pipeline-service.outputs.tags }} ${{ github.ref_name }}
-          registry: quay.io/redhat-pipeline-service
+          registry: quay.io/bnr
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
       - name: Print image url
@@ -287,7 +287,7 @@ jobs:
         with:
           image: ${{ steps.build-image-devenv.outputs.image }}
           tags: ${{ steps.build-image-devenv.outputs.tags }} ${{ github.ref_name }}
-          registry: quay.io/redhat-pipeline-service
+          registry: quay.io/bnr
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
       - name: Print image url
@@ -323,7 +323,7 @@ jobs:
         with:
           image: ${{ steps.build-image-shellcheck.outputs.image }}
           tags: ${{ steps.build-image-shellcheck.outputs.tags }} ${{ github.ref_name }}
-          registry: quay.io/redhat-pipeline-service
+          registry: quay.io/bnr
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
       - name: Print image url
@@ -359,7 +359,7 @@ jobs:
         with:
           image: ${{ steps.build-image-vulnerability-scan.outputs.image }}
           tags: ${{ steps.build-image-vulnerability-scan.outputs.tags }} ${{ github.ref_name }}
-          registry: quay.io/redhat-pipeline-service
+          registry: quay.io/bnr
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
       - name: Print image url
