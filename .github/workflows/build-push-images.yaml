@@ -3,7 +3,7 @@ name: Build and push images to quay
 on:
   push:
     branches:
-      - main
+      - fix_quay_upload
   workflow_dispatch:
 
 jobs:
@@ -85,7 +85,7 @@ jobs:
           username: ${{ secrets.QUAY_USERNAME }}
           password: ${{ secrets.QUAY_TOKEN }}
         run: |
-          ./test/images/quay-upload/image-upload.sh
+          ./test/images/quay-upload/image-upload.sh --debug
 
       # Build and push cluster-setup image, tagged with latest and the commit SHA.
       - name: Build cluster-setup Image
