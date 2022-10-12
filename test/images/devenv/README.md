@@ -8,7 +8,7 @@ You can start a container with `./run.sh`, by default it will use the latest ima
 If you want to build a local image (e.g. after changing dependencies locally), you can use the `--dev` flag.
 
 When exiting the container, it will be stopped. Running `./run.sh` will restart the container.
-This allow users to preserve any customization they might have done.
+This allows users to preserve any customization they might have done.
 
 ## Managing containers
 One container will be spawned per repository clone, and you'll see that the container name is based on the clone path.
