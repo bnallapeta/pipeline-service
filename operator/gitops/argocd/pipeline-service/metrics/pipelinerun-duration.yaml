@@ -1,0 +1,50 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: fibonacci-pipeline
+  namespace: pipeline-service-metrics
+spec:
+  params:
+    - name: number
+  tasks:
+    - name: calculate-fibonacci
+      taskSpec:
+        params:
+          - name: number
+        steps:
+          - name: calculate-fibonacci
+            image: registry.access.redhat.com/ubi9/ubi-minimal@sha256:3685c58885771d2ea14608caeab6a4c3949b973588c29ce91f462b486ee1be25
+            script: |
+              #!/bin/bash
+              start_time=$(date +%s)
+              number=$(params.number)
+              a=0
+              b=1
+              echo "Calculating Fibonacci series for $number numbers..."
+              for ((i=0;i<number;i++))
+              do
+                fn=$((a + b))
+                a=$b
+                b=$fn
+              done
+              echo "The final number in the Fibonacci series is: $b"
+              end_time=$(date +%s)
+              total_time=$((end_time - start_time))
+              echo "Total time taken: $total_time seconds"
+      params:
+        - name: number
+          value: "$(params.number)"
+
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: fibonacci-pipeline-run-
+  namespace: pipeline-service-metrics
+spec:
+  params:
+    - name: number
+      value: "2888888"
+  pipelineRef:
+    name: fibonacci-pipeline

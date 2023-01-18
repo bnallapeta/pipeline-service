@@ -1,0 +1,26 @@
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: fibonacci-cronjob
+  namespace: pipeline-service-metrics
+spec:
+  schedule: "*/15 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: pipeline-service-metrics-sa
+          restartPolicy: OnFailure
+          containers:
+            - name: fibonacci
+              image: quay.io/redhat-pipeline-service/ci-runner:main
+              command: ["/bin/sh"]
+              args: ["-c", "kubectl create -f https://raw.githubusercontent.com/bnallapeta/pipeline-service/pr_duration_sli/operator/gitops/argocd/pipeline-service/metrics/pipelinerun-duration.yaml"]
+              securityContext:
+                allowPrivilegeEscalation: false
+                runAsNonRoot: true
+                capabilities:
+                  drop: [ "ALL" ]
+                seccompProfile:
+                  type: "RuntimeDefault"
