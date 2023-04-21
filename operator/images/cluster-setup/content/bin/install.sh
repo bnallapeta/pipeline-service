@@ -140,13 +140,14 @@ install_clusters() {
     resultsDeployments=("tekton-results-api" "tekton-results-watcher")
     check_deployments "tekton-results" "${resultsDeployments[@]}" | indent 4
     chainsDeployments=("tekton-chains-controller")
-    check_deployments "tekton-chains" "${chainsDeployments[@]}" | indent 4
+    check_deployments "openshift-pipelines" "${chainsDeployments[@]}" | indent 4
   done
 }
 
 install_shared_manifests() {
   CREDENTIALS_DIR="$WORKSPACE_DIR/credentials"
 
+  #TODO: Design for the below logic must be changed as we won't have tekton-chains namespace anymore.
   if [ "$(kubectl get secret -n tekton-chains signing-secrets --ignore-not-found -o json | jq -r ".immutable")" != "true" ]; then
     kubectl apply -k "$CREDENTIALS_DIR/manifests/compute/tekton-chains"
   fi

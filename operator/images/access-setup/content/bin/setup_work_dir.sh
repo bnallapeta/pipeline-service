@@ -157,6 +157,7 @@ tekton_chains_manifest(){
       --workdir /workspace \
       --entrypoint /usr/bin/cosign \
       "$cosign_image" generate-key-pair
+    #TODO: Design for the next set of code must be changed as we won't have tekton-chains namespace anymore.
     kubectl create namespace tekton-chains --dry-run=client -o yaml > "$chains_namespace"
     kubectl create secret generic -n tekton-chains signing-secrets --from-file="$chains_tmp_dir" --dry-run=client -o yaml | \
             yq '. += {"immutable" :true}' | \
