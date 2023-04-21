@@ -121,8 +121,8 @@ detect_container_engine() {
 
 generate_shared_manifests(){
   printf -- "- Generating shared manifests:\n"
-  printf -- "  - tekton-chains manifest:\n"
-  tekton_chains_manifest 2>&1 | indent 4
+#  printf -- "  - tekton-chains manifest:\n"
+#  tekton_chains_manifest 2>&1 | indent 4
   printf -- "  - tekton-results manifest:\n"
   tekton_results_manifest 2>&1 | indent 4
 }

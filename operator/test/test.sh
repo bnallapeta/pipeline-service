@@ -249,10 +249,10 @@ test_security() {
   echo "  - Check Pod Host Network tekton-results: "
   check_host_network "tekton-results"
 
-  echo "  - Check Pod Security tekton-chains: "
-  check_pod_security "tekton-chains"
-  echo "  - Check Pod Host Network tekton-chains: "
-  check_host_network "tekton-chains"
+#  echo "  - Check Pod Security tekton-chains: "
+#  check_pod_security "tekton-chains"
+#  echo "  - Check Pod Host Network tekton-chains: "
+#  check_host_network "tekton-chains"
 }
 
 test_results() {
